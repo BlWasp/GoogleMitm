@@ -24,10 +24,6 @@ GoogleMitm/
     aitm_evilginx/               # Approach 2: AiTM phishing with Evilginx
       phishlets/google.yaml      #   Google phishlet with anti-detection patches
       replay_evilginx.py         #   Replay of captured sessions
-      DETECTION_GOOGLE.md        #   BotGuard detection analysis report
-  ExportBurp/                    # BurpSuite captures (analysis data)
-    http_export
-  GoogleMitm.burp                # Burp project
 ```
 
 ---
